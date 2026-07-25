@@ -1,0 +1,66 @@
+"use client";
+
+import { DeploymentCard } from '@/components/dashboard/DeploymentCard';
+import { RepositoryCard } from '@/components/dashboard/RepositoryCard';
+import { PullRequestCard } from '@/components/dashboard/PullRequestCard';
+import { CommitCard } from '@/components/dashboard/CommitCard';
+import { AIAnalysisCard } from '@/components/ai/AIAnalysisCard';
+import { RelatedPRCard } from '@/components/github/RelatedPRCard';
+import { ChangedFilesCard } from '@/components/github/ChangedFilesCard';
+import { LogViewer } from '@/components/logs/LogViewer';
+import { motion } from 'framer-motion';
+
+export default function DashboardPage() {
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+  };
+
+  return (
+    <motion.div 
+      className="space-y-8 pb-12"
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+    >
+      {/* 4 Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <motion.div variants={itemVariants}><DeploymentCard /></motion.div>
+        <motion.div variants={itemVariants}><RepositoryCard /></motion.div>
+        <motion.div variants={itemVariants}><PullRequestCard /></motion.div>
+        <motion.div variants={itemVariants}><CommitCard /></motion.div>
+      </div>
+
+      {/* Main Content Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        {/* Left Column - 65% */}
+        <motion.div variants={itemVariants} className="lg:col-span-8 flex flex-col gap-8">
+          <AIAnalysisCard />
+          
+          {/* Logs */}
+          <div className="mt-auto">
+            <LogViewer />
+          </div>
+        </motion.div>
+
+        {/* Right Column - 35% */}
+        <motion.div variants={itemVariants} className="lg:col-span-4 flex flex-col gap-6">
+          <RelatedPRCard />
+          <ChangedFilesCard />
+        </motion.div>
+
+      </div>
+    </motion.div>
+  );
+}
