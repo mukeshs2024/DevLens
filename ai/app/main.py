@@ -22,7 +22,13 @@ async def validation_exception_handler(_: object, exc: RequestValidationError) -
 async def analyze(request: AnalysisRequest) -> AnalysisResponse | JSONResponse:
     try:
         prompt = build_prompt(request)
+
+        print("Calling Gemini...")
+
         raw_response = await client.generate(prompt)
+
+        print("Gemini returned")
+
         parsed_response = parse_response(raw_response)
         confidence = score_confidence(parsed_response)
 
@@ -33,7 +39,11 @@ async def analyze(request: AnalysisRequest) -> AnalysisResponse | JSONResponse:
             suggested_fix=parsed_response.get("suggested_fix", "No suggested fix generated."),
             confidence=confidence,
         )
-    except (AIModelUnavailableError, ResponseParserError):
-        return JSONResponse(status_code=503, content={"detail": "AI model unavailable"})
-    except Exception:
-        return JSONResponse(status_code=503, content={"detail": "AI model unavailable"})
+    except (AIModelUnavailableError, ResponseParserError) as e:
+        print("ERROR 1:", repr(e))
+        raise
+    except Exception as e:
+        print("ERROR 2:", repr(e))
+        import traceback
+        traceback.print_exc()
+        raise

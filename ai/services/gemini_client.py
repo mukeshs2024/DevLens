@@ -2,6 +2,8 @@ import os
 
 import httpx
 
+print("gemini_client.py loaded")
+
 
 class AIModelUnavailableError(RuntimeError):
     pass
@@ -32,12 +34,28 @@ class GeminiClient:
                     f"{self.base_url}/{self.model}:generateContent?key={self.api_key}",
                     json=payload,
                 )
+
+                print("Status:", response.status_code)
+                print(response.text)
+                print("========== GEMINI RESPONSE ==========")
+                print("Status:", response.status_code)
+                print("Body:")
+                print(response.text)
+
                 if response.status_code in {429, 500, 502, 503, 504}:
                     raise AIModelUnavailableError("AI model unavailable")
                 response.raise_for_status()
                 data = response.json()
-        except (httpx.HTTPError, ValueError) as exc:
-            raise AIModelUnavailableError("AI model unavailable") from exc
+        except Exception as exc:
+            print("========== GEMINI ERROR ==========")
+            print("Exception:", exc)
+
+            if "response" in locals():
+                print("Status Code:", response.status_code)
+                print("Response Body:")
+                print(response.text)
+
+            raise
 
         if not data.get("candidates"):
             raise AIModelUnavailableError("AI model unavailable")
