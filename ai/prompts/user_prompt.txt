@@ -1,9 +1,22 @@
-Analyze the following debugging context.
-Logs:
-{logs}
-Errors:
-{errors}
-GitHub Context:
-{github_context}
+Analyze the following deployment incident context.
+Repository:
+{repository}
+Branch:
+{branch}
+Parsed errors:
+{parsed_errors}
+Stack traces:
+{stack_traces}
+Critical warnings:
+{critical_warnings}
+Latest commit:
+{latest_commit}
+Changed files:
+{changed_files}
+Commit message:
+{commit_message}
+Issue description:
+{issue_description}
 
-Return valid JSON only.
+Identify the most likely root cause, provide a concise summary, suggest a practical fix, and assign a confidence score.
+Return valid JSON only with the exact keys: summary, root_cause, severity, suggested_fix, confidence.

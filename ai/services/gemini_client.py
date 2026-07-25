@@ -1,21 +1,48 @@
 import os
-from typing import Any
+
+import httpx
+
+
+class AIModelUnavailableError(RuntimeError):
+    pass
 
 
 class GeminiClient:
     def __init__(self, api_key: str | None = None, model: str = "gemini-1.5-flash") -> None:
         self.api_key = api_key or os.getenv("GEMINI_API_KEY", "")
         self.model = model
+        self.base_url = "https://generativelanguage.googleapis.com/v1beta/models"
 
     async def generate(self, prompt: dict[str, str]) -> str:
         if not self.api_key:
-            raise RuntimeError("GEMINI_API_KEY is not configured")
+            raise AIModelUnavailableError("GEMINI_API_KEY is not configured")
 
-        # MVP placeholder implementation. Replace with actual Gemini SDK call.
-        return (
-            '{"summary": "Detected a likely upstream failure.", '
-            '"root_cause": "The dependency is timing out or returning errors.", '
-            '"severity": "high", '
-            '"suggested_fix": "Add retries with backoff and inspect upstream service health.", '
-            '"confidence": 0.84}'
-        )
+        combined_prompt = f"{prompt['system_prompt']}\n\n{prompt['user_prompt']}"
+        payload = {
+            "contents": [{"parts": [{"text": combined_prompt}]}],
+            "generationConfig": {
+                "temperature": 0.2,
+                "responseMimeType": "application/json",
+            },
+        }
+
+        try:
+            async with httpx.AsyncClient(timeout=20.0) as client:
+                response = await client.post(
+                    f"{self.base_url}/{self.model}:generateContent?key={self.api_key}",
+                    json=payload,
+                )
+                if response.status_code in {429, 500, 502, 503, 504}:
+                    raise AIModelUnavailableError("AI model unavailable")
+                response.raise_for_status()
+                data = response.json()
+        except (httpx.HTTPError, ValueError) as exc:
+            raise AIModelUnavailableError("AI model unavailable") from exc
+
+        if not data.get("candidates"):
+            raise AIModelUnavailableError("AI model unavailable")
+
+        try:
+            return data["candidates"][0]["content"]["parts"][0]["text"]
+        except (KeyError, IndexError) as exc:
+            raise AIModelUnavailableError("AI model unavailable") from exc
