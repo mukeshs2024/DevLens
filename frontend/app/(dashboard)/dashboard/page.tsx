@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from 'react';
 import { DeploymentCard } from '@/components/dashboard/DeploymentCard';
 import { RepositoryCard } from '@/components/dashboard/RepositoryCard';
 import { PullRequestCard } from '@/components/dashboard/PullRequestCard';
@@ -11,6 +12,15 @@ import { LogViewer } from '@/components/logs/LogViewer';
 import { motion } from 'framer-motion';
 
 export default function DashboardPage() {
+  const [analysisData, setAnalysisData] = useState<any>(null);
+
+  useEffect(() => {
+    const data = localStorage.getItem('devlens_analysis');
+    if (data) {
+      setAnalysisData(JSON.parse(data));
+    }
+  }, []);
+
   const containerVariants = {
     hidden: { opacity: 0 },
     show: {
@@ -46,7 +56,7 @@ export default function DashboardPage() {
         
         {/* Left Column - 65% */}
         <motion.div variants={itemVariants} className="lg:col-span-8 flex flex-col gap-8">
-          <AIAnalysisCard />
+          <AIAnalysisCard data={analysisData} />
           
           {/* Logs */}
           <div className="mt-auto">

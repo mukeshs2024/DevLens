@@ -18,6 +18,7 @@ async def analyze_issue(request: AnalyzeRequest):
         investigation_id=investigation_id,
         repo_url=request.repository_url,
         branch=request.branch,
-        issue_description=request.issue_description
+        issue_description=request.issue_description,
+        logs=request.logs
     )
     return AnalyzeResponse(**result)

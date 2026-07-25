@@ -1,6 +1,6 @@
 import { AlertTriangle } from 'lucide-react';
 
-export function ErrorSummary() {
+export function ErrorSummary({ summary }: { summary?: string }) {
   return (
     <div className="bg-red-50/50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/50 rounded-xl p-5">
       <div className="flex items-center gap-3 mb-2">
@@ -10,8 +10,7 @@ export function ErrorSummary() {
         <h3 className="font-bold text-red-900 dark:text-red-300">Error Summary</h3>
       </div>
       <div className="text-sm text-red-800 dark:text-red-200/80 ml-12 space-y-1">
-        <p>Database connection timeout occurred while processing payment.</p>
-        <p>Application could not connect to database.</p>
+        <p>{summary || "No summary available."}</p>
       </div>
     </div>
   );

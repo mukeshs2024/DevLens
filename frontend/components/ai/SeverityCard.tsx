@@ -1,7 +1,8 @@
 import { Shield } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
-export function SeverityCard() {
+export function SeverityCard({ severity }: { severity?: string }) {
+  const displaySeverity = severity ? severity.toUpperCase() : 'UNKNOWN';
   return (
     <div className="bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/50 rounded-xl p-5">
       <div className="flex flex-col h-full">
@@ -12,10 +13,10 @@ export function SeverityCard() {
             </div>
             <h3 className="font-bold text-blue-900 dark:text-blue-300">Severity</h3>
           </div>
-          <Badge className="bg-blue-600 hover:bg-blue-700 text-white shadow-none">HIGH</Badge>
+          <Badge className="bg-blue-600 hover:bg-blue-700 text-white shadow-none">{displaySeverity}</Badge>
         </div>
         <p className="text-sm text-blue-800 dark:text-blue-200/80 mt-auto">
-          Deployment failure affecting payment service.
+          AI assessed severity level for this investigation.
         </p>
       </div>
     </div>

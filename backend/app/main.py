@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.exceptions import DevLensException, devlens_exception_handler
 from app.api.routes import analyze, logs, investigation
@@ -6,6 +7,14 @@ from app.api.routes import analyze, logs, investigation
 app = FastAPI(
     title=settings.PROJECT_NAME,
     openapi_url=f"{settings.API_V1_STR}/openapi.json"
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # For MVP, allow all
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Exception handlers

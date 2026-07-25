@@ -11,13 +11,19 @@ class GithubService:
         }
 
     async def _make_request(self, method: str, endpoint: str, **kwargs):
-        async with httpx.AsyncClient() as client:
-            response = await client.request(
-                method=method,
-                url=f"{self.base_url}{endpoint}",
-                headers=self.headers,
-                **kwargs
-            )
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            try:
+                response = await client.request(
+                    method=method,
+                    url=f"{self.base_url}{endpoint}",
+                    headers=self.headers,
+                    **kwargs
+                )
+            except httpx.RequestError as exc:
+                raise GitHubAPIError(
+                    f"Connection to GitHub failed or timed out: {exc}",
+                    status_code=503
+                )
             
             if response.status_code in [401, 403]:
                 raise GitHubAPIError("GitHub API authorization failed. Check your token.", status_code=401)

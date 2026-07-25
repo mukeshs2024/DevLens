@@ -6,7 +6,9 @@ import { SeverityCard } from './SeverityCard';
 import { SuggestedFixCard } from './SuggestedFixCard';
 import { motion } from 'framer-motion';
 
-export function AIAnalysisCard() {
+export function AIAnalysisCard({ data }: { data?: any }) {
+  if (!data) return null;
+
   return (
     <Card className="shadow-lg border-indigo-100 dark:border-indigo-900/50 relative overflow-hidden bg-white/50 backdrop-blur-xl">
       <div className="absolute top-0 right-0 p-40 bg-indigo-500/5 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
@@ -22,10 +24,10 @@ export function AIAnalysisCard() {
 
       <CardContent className="p-6 md:p-8 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <ErrorSummary />
-          <RootCause />
-          <SuggestedFixCard />
-          <SeverityCard />
+          <ErrorSummary summary={data.summary} />
+          <RootCause root_cause={data.root_cause} confidence={data.confidence} />
+          <SuggestedFixCard suggested_fix={data.suggested_fix} />
+          <SeverityCard severity={data.severity} />
         </div>
       </CardContent>
     </Card>

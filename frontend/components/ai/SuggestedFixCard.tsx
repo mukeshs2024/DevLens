@@ -1,6 +1,7 @@
 import { Lightbulb } from 'lucide-react';
 
-export function SuggestedFixCard() {
+export function SuggestedFixCard({ suggested_fix }: { suggested_fix?: string }) {
+  // If the suggested fix has bullet points in text (newlines or markdown), we can just render it as text for now.
   return (
     <div className="bg-green-50/50 dark:bg-green-950/20 border border-green-100 dark:border-green-900/50 rounded-xl p-5 sm:col-span-2">
       <div className="flex items-center gap-3 mb-4">
@@ -9,12 +10,9 @@ export function SuggestedFixCard() {
         </div>
         <h3 className="font-bold text-green-900 dark:text-green-300">Suggested Fix</h3>
       </div>
-      <ul className="text-sm text-green-800 dark:text-green-200/80 ml-12 space-y-2 list-disc pl-2">
-        <li>Verify <span className="font-mono text-xs bg-green-100/50 dark:bg-green-900/30 px-1 py-0.5 rounded">DATABASE_URL</span></li>
-        <li>Validate database credentials</li>
-        <li>Restart application</li>
-        <li>Rollback recent configuration if required</li>
-      </ul>
+      <div className="text-sm text-green-800 dark:text-green-200/80 ml-12 space-y-2">
+        <p className="whitespace-pre-wrap">{suggested_fix || "No fix suggested."}</p>
+      </div>
     </div>
   );
 }
