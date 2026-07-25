@@ -4,7 +4,7 @@ export const useUpload = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  const upload = useCallback(async (file: File) => {
+  const upload = useCallback(async (file: File, repository_url: string, branch: string) => {
     setIsUploading(true);
     setProgress(0);
     try {
@@ -18,8 +18,8 @@ export const useUpload = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          repository_url: "https://github.com/mukeshs2024/DevLens",
-          branch: "main",
+          repository_url: repository_url,
+          branch: branch,
           issue_description: "Analyze this log file",
           logs: text
         })

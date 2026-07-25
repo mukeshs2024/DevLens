@@ -11,9 +11,9 @@ export function Sidebar() {
   const navItems = [
     { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { label: 'Upload Logs', href: '/upload', icon: UploadCloud },
-    { label: 'Analysis History', href: '#', icon: History },
-    { label: 'Repositories', href: '#', icon: FolderGit2 },
-    { label: 'Settings', href: '#', icon: Settings },
+    { label: 'Analysis History', href: '/history', icon: History },
+    { label: 'Repositories', href: '/repositories', icon: FolderGit2 },
+    { label: 'Settings', href: '/settings', icon: Settings },
   ];
 
   return (

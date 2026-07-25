@@ -2,7 +2,9 @@ from fastapi import APIRouter
 from app.models.schemas.requests import AnalyzeRequest
 from app.models.schemas.responses import AnalyzeResponse
 from app.services.analyzer import AnalysisOrchestrator
+from app.services.storage_service import storage
 import uuid
+import datetime
 
 router = APIRouter()
 orchestrator = AnalysisOrchestrator()
@@ -21,4 +23,19 @@ async def analyze_issue(request: AnalyzeRequest):
         issue_description=request.issue_description,
         logs=request.logs
     )
+    
+    # Save to history
+    history_item = {
+        "id": investigation_id,
+        "uuid": investigation_id,
+        "timestamp": datetime.datetime.now().isoformat(),
+        "repository": result.get("repository"),
+        "branch": result.get("branch"),
+        "severity": result.get("severity"),
+        "summary": result.get("summary"),
+        "status": result.get("status", "completed"),
+        "data": result
+    }
+    storage.add_history(history_item)
+    
     return AnalyzeResponse(**result)

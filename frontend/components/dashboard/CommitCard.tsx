@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { motion } from 'framer-motion';
 
 export function CommitCard({ data }: { data?: any }) {
-  const commitSha = data?.latest_commit ? data.latest_commit.substring(0, 7) : 'N/A';
+  const commitSha = data?.latest_commit ? data.latest_commit.substring(0, 7) : 'Unknown';
   const commitMsg = data?.commit_message || 'No commit message';
 
   return (

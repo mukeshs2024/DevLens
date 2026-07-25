@@ -1,12 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.core.config import settings
+from app.core.config import settings as core_settings
 from app.core.exceptions import DevLensException, devlens_exception_handler
-from app.api.routes import analyze, logs, investigation
+from app.api.routes import analyze, logs, investigation, repositories, history, settings as settings_router
 
 app = FastAPI(
-    title=settings.PROJECT_NAME,
-    openapi_url=f"{settings.API_V1_STR}/openapi.json"
+    title=core_settings.PROJECT_NAME,
+    openapi_url=f"{core_settings.API_V1_STR}/openapi.json"
 )
 
 app.add_middleware(
@@ -21,9 +21,12 @@ app.add_middleware(
 app.add_exception_handler(DevLensException, devlens_exception_handler)
 
 # Include routers
-app.include_router(analyze.router, prefix=f"{settings.API_V1_STR}/analyze", tags=["Analyze"])
-app.include_router(logs.router, prefix=f"{settings.API_V1_STR}/upload-log", tags=["Logs"])
-app.include_router(investigation.router, prefix=f"{settings.API_V1_STR}/investigation", tags=["Investigation"])
+app.include_router(analyze.router, prefix=f"{core_settings.API_V1_STR}/analyze", tags=["Analyze"])
+app.include_router(logs.router, prefix=f"{core_settings.API_V1_STR}/upload-log", tags=["Logs"])
+app.include_router(investigation.router, prefix=f"{core_settings.API_V1_STR}/investigation", tags=["Investigation"])
+app.include_router(repositories.router, prefix=f"{core_settings.API_V1_STR}/repositories", tags=["Repositories"])
+app.include_router(history.router, prefix=f"{core_settings.API_V1_STR}/history", tags=["History"])
+app.include_router(settings_router.router, prefix=f"{core_settings.API_V1_STR}/settings", tags=["Settings"])
 
 from fastapi.responses import RedirectResponse
 

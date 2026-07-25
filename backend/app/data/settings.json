@@ -1,0 +1,7 @@
+{
+    "github_token": "",
+    "repository_url": "",
+    "default_branch": "main",
+    "backend_url": "http://localhost:8000",
+    "theme": "dark"
+}

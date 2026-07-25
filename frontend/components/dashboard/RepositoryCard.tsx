@@ -2,8 +2,8 @@ import { GitBranch } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
 export function RepositoryCard({ data }: { data?: any }) {
-  const repoName = data?.repository ? data.repository.split('/').pop() : 'N/A';
-  const branchName = data?.branch || 'N/A';
+  const repoName = data?.repository ? data.repository.split('/').pop() : 'Unknown';
+  const branchName = data?.branch || 'Unknown';
 
   return (
     <Card className="shadow-sm border-slate-200 hover:shadow-md transition-shadow">

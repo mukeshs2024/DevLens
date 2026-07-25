@@ -28,8 +28,16 @@ class AnalysisOrchestrator:
         latest_commit = await self.github_service.get_latest_commit(owner, repo, branch)
         commit_sha = latest_commit.get("sha")
         commit_message = latest_commit.get("commit", {}).get("message", "")
-        changed_files = [f.get("filename") for f in latest_commit.get("files", [])]
+        changed_files = latest_commit.get("files", [])
         
+        pr_data = None
+        try:
+            prs = await self.github_service.get_latest_pull_request(owner, repo)
+            if prs and len(prs) > 0:
+                pr_data = prs[0]
+        except Exception as e:
+            logger.warning(f"[{investigation_id}] Could not fetch PRs: {e}")
+            
         logger.info(f"[{investigation_id}] Fetched GitHub context.")
         
         # 2. Parse Logs
@@ -50,8 +58,8 @@ class AnalysisOrchestrator:
             "parsed_errors": raw_errors,
             "stack_traces": stack_traces,
             "critical_warnings": critical_warnings,
-            "latest_commit": commit_sha,
-            "changed_files": changed_files,
+            "latest_commit": latest_commit,
+            "changed_files": [f.get("filename") for f in changed_files],
             "commit_message": commit_message,
             "issue_description": issue_description or ""
         }
@@ -105,5 +113,6 @@ class AnalysisOrchestrator:
             "commit_message": commit_message,
             "changed_files": changed_files,
             "parsed_errors": raw_errors,
-            "stack_traces": stack_traces
+            "stack_traces": stack_traces,
+            "pull_request": pr_data
         }
