@@ -9,7 +9,7 @@ import { AIAnalysisCard } from '@/components/ai/AIAnalysisCard';
 import { RelatedPRCard } from '@/components/github/RelatedPRCard';
 import { ChangedFilesCard } from '@/components/github/ChangedFilesCard';
 import { LogViewer } from '@/components/logs/LogViewer';
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 
 export default function DashboardPage() {
   const [analysisData, setAnalysisData] = useState<any>(null);
@@ -21,7 +21,7 @@ export default function DashboardPage() {
     }
   }, []);
 
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
@@ -31,7 +31,7 @@ export default function DashboardPage() {
     }
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
     show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
   };
