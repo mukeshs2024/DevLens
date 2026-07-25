@@ -98,5 +98,12 @@ class AnalysisOrchestrator:
             "root_cause": validated_ai_response.root_cause,
             "severity": validated_ai_response.severity,
             "suggested_fix": validated_ai_response.suggested_fix,
-            "confidence": validated_ai_response.confidence
+            "confidence": validated_ai_response.confidence,
+            "repository": f"{owner}/{repo}",
+            "branch": branch,
+            "latest_commit": commit_sha,
+            "commit_message": commit_message,
+            "changed_files": changed_files,
+            "parsed_errors": raw_errors,
+            "stack_traces": stack_traces
         }

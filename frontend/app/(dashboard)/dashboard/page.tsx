@@ -45,10 +45,10 @@ export default function DashboardPage() {
     >
       {/* 4 Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <motion.div variants={itemVariants}><DeploymentCard /></motion.div>
-        <motion.div variants={itemVariants}><RepositoryCard /></motion.div>
-        <motion.div variants={itemVariants}><PullRequestCard /></motion.div>
-        <motion.div variants={itemVariants}><CommitCard /></motion.div>
+        <motion.div variants={itemVariants}><DeploymentCard data={analysisData} /></motion.div>
+        <motion.div variants={itemVariants}><RepositoryCard data={analysisData} /></motion.div>
+        <motion.div variants={itemVariants}><PullRequestCard data={analysisData} /></motion.div>
+        <motion.div variants={itemVariants}><CommitCard data={analysisData} /></motion.div>
       </div>
 
       {/* Main Content Layout */}
@@ -60,14 +60,14 @@ export default function DashboardPage() {
           
           {/* Logs */}
           <div className="mt-auto">
-            <LogViewer />
+            <LogViewer data={analysisData} />
           </div>
         </motion.div>
 
         {/* Right Column - 35% */}
         <motion.div variants={itemVariants} className="lg:col-span-4 flex flex-col gap-6">
-          <RelatedPRCard />
-          <ChangedFilesCard />
+          <RelatedPRCard data={analysisData} />
+          <ChangedFilesCard data={analysisData} />
         </motion.div>
 
       </div>

@@ -2,7 +2,7 @@ import { GitPullRequest, ExternalLink } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
-export function RelatedPRCard() {
+export function RelatedPRCard({ data }: { data?: any }) {
   return (
     <Card className="shadow-sm border-slate-200">
       <CardContent className="p-6">
@@ -17,23 +17,23 @@ export function RelatedPRCard() {
           <div className="flex items-start justify-between">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-sm font-bold text-indigo-600">PR #42</span>
-                <span className="text-sm font-medium text-slate-900">Fix payment validation logic</span>
+                <span className="text-sm font-bold text-slate-400">N/A</span>
+                <span className="text-sm font-medium text-slate-400">Not fetched in MVP</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="h-5 w-5 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-[10px] font-bold">
-                  JD
+                <div className="h-5 w-5 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-[10px] font-bold">
+                  ?
                 </div>
-                <span className="text-xs text-slate-500">John Doe • 2 hours ago</span>
+                <span className="text-xs text-slate-400">-</span>
               </div>
             </div>
           </div>
 
-          <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg text-sm text-slate-600 dark:text-slate-400 border border-slate-100 dark:border-slate-800">
-            Changes may have affected database configuration and connection handling.
+          <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg text-sm text-slate-400 border border-slate-100 dark:border-slate-800">
+            PR context is currently unavailable.
           </div>
 
-          <Button className="w-full bg-slate-900 hover:bg-slate-800 text-white shadow-sm">
+          <Button disabled className="w-full bg-slate-100 text-slate-400 shadow-sm hover:bg-slate-100">
             Open on GitHub <ExternalLink className="h-4 w-4 ml-2" />
           </Button>
         </div>

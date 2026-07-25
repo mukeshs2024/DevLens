@@ -17,6 +17,13 @@ class AnalyzeResponse(BaseModel):
     severity: str
     suggested_fix: str
     confidence: float
+    repository: Optional[str] = None
+    branch: Optional[str] = None
+    latest_commit: Optional[str] = None
+    commit_message: Optional[str] = None
+    changed_files: Optional[List[str]] = None
+    parsed_errors: Optional[List[dict]] = None
+    stack_traces: Optional[List[str]] = None
 
 class ParsedError(BaseModel):
     line: int

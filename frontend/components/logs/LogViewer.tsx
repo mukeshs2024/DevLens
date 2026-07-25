@@ -2,7 +2,10 @@ import { Terminal, Maximize2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
-export function LogViewer() {
+export function LogViewer({ data }: { data?: any }) {
+  const errors: any[] = data?.parsed_errors || [];
+  const stackTraces: string[] = data?.stack_traces || [];
+
   return (
     <Card className="shadow-sm border-slate-200 overflow-hidden bg-slate-900 text-slate-300">
       <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-[#0F172A]">
@@ -16,13 +19,21 @@ export function LogViewer() {
         </Button>
       </div>
       <CardContent className="p-0">
-        <pre className="p-6 font-mono text-sm leading-relaxed overflow-x-auto">
+        <pre className="p-6 font-mono text-sm leading-relaxed overflow-x-auto whitespace-pre-wrap">
           <code className="text-slate-400">
-            <span className="text-slate-500">2025-05-11T10:24:30</span> <span className="text-blue-400">INFO</span>  PaymentService.process() initialized<br/>
-            <span className="text-slate-500">2025-05-11T10:24:30</span> <span className="text-yellow-400">WARN</span>  Database connection pool nearing capacity (85%)<br/>
-            <span className="text-slate-500">2025-05-11T10:24:31</span> <span className="text-red-400 font-bold">ERROR</span> connect ETIMEDOUT 10.0.12.4:5432<br/>
-            <span className="text-slate-500"></span>       at PaymentService.process() (/app/src/services/payment.service.ts:42:15)<br/>
-            <span className="text-slate-500"></span>       at OrdersController.createOrder() (/app/src/controllers/orders.ts:18:22)
+            {errors.length === 0 && stackTraces.length === 0 && (
+              <span className="text-slate-500">No parsed errors or stack traces found.</span>
+            )}
+            {errors.map((err, i) => (
+              <div key={`err-${i}`} className="mb-2">
+                <span className="text-red-400 font-bold">ERROR</span> (Line {err.line}): {err.message}
+              </div>
+            ))}
+            {stackTraces.map((trace, i) => (
+              <div key={`trace-${i}`} className="text-slate-500 mt-2">
+                {trace}
+              </div>
+            ))}
           </code>
         </pre>
       </CardContent>
