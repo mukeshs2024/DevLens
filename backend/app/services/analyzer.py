@@ -1,8 +1,12 @@
+import time
 import httpx
+from pydantic import ValidationError
 from app.services.github import GithubService
 from app.services.log_parser import LogParserService
+from app.models.schemas.responses import AIResponseSchema
 from app.utils.logger import setup_logger
 from app.core.config import settings
+from app.core.exceptions import DevLensException
 
 logger = setup_logger(__name__)
 
@@ -14,65 +18,85 @@ class AnalysisOrchestrator:
     async def run_analysis(self, investigation_id: str, repo_url: str, branch: str, issue_description: str = None, logs: str = None) -> dict:
         logger.info(f"[{investigation_id}] Starting analysis for {repo_url} on branch {branch}")
         
-        # 1. Parse repository details
-        # naive extraction for demo
         parts = repo_url.rstrip("/").split("/")
         owner, repo = parts[-2], parts[-1]
         
         github_context = {}
         parsed_logs = {}
         
-        try:
-            # 2. Fetch GitHub Context
-            latest_commit = await self.github_service.get_latest_commit(owner, repo, branch)
-            github_context["latest_commit_sha"] = latest_commit.get("sha")
+        # 1. Fetch GitHub Context
+        latest_commit = await self.github_service.get_latest_commit(owner, repo, branch)
+        commit_sha = latest_commit.get("sha")
+        commit_message = latest_commit.get("commit", {}).get("message", "")
+        changed_files = [f.get("filename") for f in latest_commit.get("files", [])]
+        
+        logger.info(f"[{investigation_id}] Fetched GitHub context.")
+        
+        # 2. Parse Logs
+        raw_errors = []
+        stack_traces = []
+        critical_warnings = 0
+        if logs:
+            parsed_logs = self.parser_service.parse_logs(logs)
+            raw_errors = [e.model_dump() for e in parsed_logs.get("parsed_errors", [])]
+            stack_traces = parsed_logs.get("stack_traces", [])
+            critical_warnings = parsed_logs.get("critical_warnings", 0)
+            logger.info(f"[{investigation_id}] Parsed logs. Found {len(raw_errors)} errors.")
             
-            # Additional github context could be fetched here (e.g. PRs, changed files)
-            context_string = f"Repository: {owner}/{repo}, Branch: {branch}, Latest Commit: {latest_commit.get('sha')}"
-            if issue_description:
-                context_string += f" | Issue Description: {issue_description}"
-                
-            logger.info(f"[{investigation_id}] Fetched GitHub context.")
-            
-            # 3. Parse Logs if provided
-            raw_errors = []
-            if logs:
-                parsed_logs = self.parser_service.parse_logs(logs)
-                raw_errors = [e.message for e in parsed_logs.get("parsed_errors", [])]
-                logger.info(f"[{investigation_id}] Parsed logs. Found {len(raw_errors)} errors.")
-                
-            # 4. Call AI Service via HTTP
-            ai_payload = {
-                "logs": parsed_logs.get("stack_traces", []),
-                "errors": raw_errors,
-                "github_context": context_string
-            }
-            
+        # 3. Call AI Service via HTTP with exact payload
+        ai_payload = {
+            "repository": f"{owner}/{repo}",
+            "branch": branch,
+            "parsed_errors": raw_errors,
+            "stack_traces": stack_traces,
+            "critical_warnings": critical_warnings,
+            "latest_commit": commit_sha,
+            "changed_files": changed_files,
+            "commit_message": commit_message,
+            "issue_description": issue_description or ""
+        }
+        
+        logger.info(f"[{investigation_id}] AI request start to {settings.AI_SERVICE_URL}")
+        start_time = time.time()
+        
+        # Retry logic for timeout
+        ai_data = None
+        for attempt in range(2):
             try:
-                logger.info(f"[{investigation_id}] Sending payload to AI service at {settings.AI_SERVICE_URL}")
                 async with httpx.AsyncClient() as client:
                     ai_resp = await client.post(settings.AI_SERVICE_URL, json=ai_payload, timeout=60.0)
                     ai_resp.raise_for_status()
                     ai_data = ai_resp.json()
+                    break # Success
+            except httpx.TimeoutException as exc:
+                if attempt == 0:
+                    logger.warning(f"[{investigation_id}] AI Timeout on attempt 1. Retrying...")
+                    continue
+                logger.error(f"[{investigation_id}] AI request failure: Timeout after 2 attempts.")
+                raise DevLensException(f"AI service connection timeout: {exc}", status_code=503, error_code="ai_service_offline")
             except httpx.RequestError as exc:
-                from app.core.exceptions import DevLensException
+                logger.error(f"[{investigation_id}] AI request failure: Connection error {exc}")
                 raise DevLensException(f"AI service connection error: {exc}", status_code=503, error_code="ai_service_offline")
             except httpx.HTTPStatusError as exc:
-                from app.core.exceptions import DevLensException
+                logger.error(f"[{investigation_id}] AI request failure: HTTP {exc.response.status_code}")
                 raise DevLensException(f"AI service returned an error: {exc.response.status_code}", status_code=503, error_code="ai_service_error")
-                
-            logger.info(f"[{investigation_id}] Received AI response.")
-            
-            return {
-                "investigation_id": investigation_id,
-                "status": "completed",
-                "summary": ai_data.get("summary", ""),
-                "root_cause": ai_data.get("root_cause", ""),
-                "severity": ai_data.get("severity", ""),
-                "suggested_fix": ai_data.get("suggested_fix", ""),
-                "confidence": ai_data.get("confidence", 0.0)
-            }
-            
-        except Exception as e:
-            logger.error(f"[{investigation_id}] Analysis failed: {str(e)}")
-            raise
+
+        response_time = time.time() - start_time
+        logger.info(f"[{investigation_id}] AI request success. Response time: {response_time:.2f}s")
+        
+        # 4. Validate AI Response
+        try:
+            validated_ai_response = AIResponseSchema(**ai_data)
+        except ValidationError as e:
+            logger.error(f"[{investigation_id}] Invalid AI Response: {e}")
+            raise DevLensException(f"AI service returned invalid payload structure: {e}", status_code=502, error_code="ai_invalid_response")
+        
+        return {
+            "investigation_id": investigation_id,
+            "status": "completed",
+            "summary": validated_ai_response.summary,
+            "root_cause": validated_ai_response.root_cause,
+            "severity": validated_ai_response.severity,
+            "suggested_fix": validated_ai_response.suggested_fix,
+            "confidence": validated_ai_response.confidence
+        }

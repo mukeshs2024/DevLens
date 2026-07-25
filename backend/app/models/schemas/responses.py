@@ -1,4 +1,12 @@
 from typing import List, Optional
+from pydantic import BaseModel, Field
+
+class AIResponseSchema(BaseModel):
+    summary: str
+    root_cause: str
+    severity: str
+    suggested_fix: str
+    confidence: float
 from pydantic import BaseModel
 
 class AnalyzeResponse(BaseModel):
