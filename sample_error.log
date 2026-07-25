@@ -1,0 +1,14 @@
+2026-07-25T10:15:32.144Z ERROR [AuthService] Connection to database failed
+Traceback (most recent call last):
+  File "/app/services/auth.py", line 45, in authenticate_user
+    db = get_db_connection()
+  File "/app/utils/db.py", line 12, in get_db_connection
+    return psycopg2.connect(dsn=settings.DATABASE_URL)
+  File "/usr/local/lib/python3.10/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+psycopg2.OperationalError: connection to server at "db.internal.devlens.io" (10.1.2.45), port 5432 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections?
+
+2026-07-25T10:15:32.146Z WARN [AuthService] Retrying authentication in 5s...
+2026-07-25T10:15:37.150Z ERROR [AuthService] Authentication retry failed. Max retries exceeded.
+2026-07-25T10:15:37.155Z FATAL [API] Unhandled exception during request processing for POST /api/v1/login

@@ -10,7 +10,7 @@ class AIModelUnavailableError(RuntimeError):
 
 
 class GeminiClient:
-    def __init__(self, api_key: str | None = None, model: str = "gemini-1.5-flash") -> None:
+    def __init__(self, api_key: str | None = None, model: str = "gemini-2.0-flash") -> None:
         self.api_key = api_key or os.getenv("GEMINI_API_KEY", "")
         self.model = model
         self.base_url = "https://generativelanguage.googleapis.com/v1beta/models"

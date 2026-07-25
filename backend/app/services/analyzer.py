@@ -46,7 +46,7 @@ class AnalysisOrchestrator:
         critical_warnings = 0
         if logs:
             parsed_logs = self.parser_service.parse_logs(logs)
-            raw_errors = [e.model_dump() for e in parsed_logs.get("parsed_errors", [])]
+            raw_errors = [e.model_dump_json() for e in parsed_logs.get("parsed_errors", [])]
             stack_traces = parsed_logs.get("stack_traces", [])
             critical_warnings = parsed_logs.get("critical_warnings", 0)
             logger.info(f"[{investigation_id}] Parsed logs. Found {len(raw_errors)} errors.")
@@ -59,7 +59,7 @@ class AnalysisOrchestrator:
             "stack_traces": stack_traces,
             "critical_warnings": critical_warnings,
             "latest_commit": latest_commit,
-            "changed_files": [f.get("filename") for f in changed_files],
+            "changed_files": [f.get("filename") for f in changed_files if f.get("filename")],
             "commit_message": commit_message,
             "issue_description": issue_description or ""
         }
@@ -112,7 +112,7 @@ class AnalysisOrchestrator:
             "latest_commit": commit_sha,
             "commit_message": commit_message,
             "changed_files": changed_files,
-            "parsed_errors": raw_errors,
+            "parsed_errors": [__import__("json").loads(e) if isinstance(e, str) else e for e in raw_errors],
             "stack_traces": stack_traces,
             "pull_request": pr_data
         }

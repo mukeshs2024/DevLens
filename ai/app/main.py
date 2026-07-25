@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
@@ -8,6 +8,13 @@ from ai.prompts.prompt_builder import build_prompt
 from ai.scoring.confidence_scoring import score_confidence
 from ai.services.gemini_client import AIModelUnavailableError, GeminiClient
 from ai.services.response_parser import ResponseParserError, parse_response
+
+import os
+from pathlib import Path
+from dotenv import load_dotenv
+
+env_path = Path(__file__).resolve().parent.parent / ".env"
+load_dotenv(dotenv_path=env_path)
 
 app = FastAPI(title="DevLens AI Module", version="0.1.0")
 client = GeminiClient()
@@ -39,11 +46,20 @@ async def analyze(request: AnalysisRequest) -> AnalysisResponse | JSONResponse:
             suggested_fix=parsed_response.get("suggested_fix", "No suggested fix generated."),
             confidence=confidence,
         )
-    except (AIModelUnavailableError, ResponseParserError) as e:
+    except AIModelUnavailableError as e:
+        print("Fallback triggered due to AIModelUnavailableError:", repr(e))
+        return AnalysisResponse(
+            summary="Fallback: Gemini API quota exceeded or unavailable.",
+            root_cause="Fallback: The DevLens AI encountered a quota exhaustion (429) or availability (503) limit while communicating with the Gemini API.",
+            severity="High",
+            suggested_fix="Fallback: Check your Google Cloud Project billing, upgrade your quota, or wait for capacity to return.",
+            confidence=0.5,
+        )
+    except ResponseParserError as e:
         print("ERROR 1:", repr(e))
-        raise
+        raise HTTPException(status_code=503, detail="Failed to parse AI response.")
     except Exception as e:
         print("ERROR 2:", repr(e))
         import traceback
         traceback.print_exc()
-        raise
+        raise HTTPException(status_code=500, detail="Internal server error")

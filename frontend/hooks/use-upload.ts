@@ -28,7 +28,8 @@ export const useUpload = () => {
       setProgress(80);
       
       if (!res.ok) {
-        throw new Error('Analysis failed');
+        const errorData = await res.json().catch(() => null);
+        throw new Error(errorData?.message || errorData?.detail || 'Analysis failed');
       }
       
       const data = await res.json();
