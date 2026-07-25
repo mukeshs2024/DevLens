@@ -20,7 +20,9 @@ class GithubService:
             )
             
             if response.status_code in [401, 403]:
-                raise GitHubAPIError("GitHub API authorization failed. Check your token.", status_code=response.status_code)
+                raise GitHubAPIError("GitHub API authorization failed. Check your token.", status_code=401)
+            elif response.status_code == 404:
+                raise GitHubAPIError("GitHub repository not found.", status_code=404)
             elif response.status_code == 429:
                 raise GitHubAPIError("GitHub API rate limit exceeded.", status_code=429)
             elif response.status_code >= 400:

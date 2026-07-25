@@ -16,6 +16,12 @@ app.include_router(analyze.router, prefix=f"{settings.API_V1_STR}/analyze", tags
 app.include_router(logs.router, prefix=f"{settings.API_V1_STR}/upload-log", tags=["Logs"])
 app.include_router(investigation.router, prefix=f"{settings.API_V1_STR}/investigation", tags=["Investigation"])
 
+from fastapi.responses import RedirectResponse
+
+@app.get("/", include_in_schema=False)
+async def root():
+    return RedirectResponse(url="/docs")
+
 @app.get("/health")
 async def health_check():
     return {"status": "ok"}

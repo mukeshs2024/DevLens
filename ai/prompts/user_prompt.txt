@@ -1,0 +1,9 @@
+Analyze the following debugging context.
+Logs:
+{logs}
+Errors:
+{errors}
+GitHub Context:
+{github_context}
+
+Return valid JSON only.
