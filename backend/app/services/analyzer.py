@@ -18,8 +18,11 @@ class AnalysisOrchestrator:
     async def run_analysis(self, investigation_id: str, repo_url: str, branch: str, issue_description: str = None, logs: str = None) -> dict:
         logger.info(f"[{investigation_id}] Starting analysis for {repo_url} on branch {branch}")
         
+        repo_url = repo_url.strip()
+        branch = branch.strip() if branch else "main"
+        
         parts = repo_url.rstrip("/").split("/")
-        owner, repo = parts[-2], parts[-1]
+        owner, repo = parts[-2].strip(), parts[-1].strip()
         
         github_context = {}
         parsed_logs = {}
@@ -51,16 +54,24 @@ class AnalysisOrchestrator:
             critical_warnings = parsed_logs.get("critical_warnings", 0)
             logger.info(f"[{investigation_id}] Parsed logs. Found {len(raw_errors)} errors.")
             
+        # Truncate for AI limits (Groq 12k TPM)
+        MAX_STACK_TRACES = 2
+        MAX_STACK_CHARS = 800
+        MAX_ERRORS = 3
+        MAX_CHANGED_FILES = 15
+        
         # 3. Call AI Service via HTTP with exact payload
+        trimmed_commit = {k: v for k, v in latest_commit.items() if k != "files"} if isinstance(latest_commit, dict) else latest_commit
+        
         ai_payload = {
             "repository": f"{owner}/{repo}",
             "branch": branch,
-            "parsed_errors": raw_errors,
-            "stack_traces": stack_traces,
+            "parsed_errors": raw_errors[:MAX_ERRORS],
+            "stack_traces": [trace[:MAX_STACK_CHARS] for trace in stack_traces[:MAX_STACK_TRACES]],
             "critical_warnings": critical_warnings,
-            "latest_commit": latest_commit,
-            "changed_files": [f.get("filename") for f in changed_files if f.get("filename")],
-            "commit_message": commit_message,
+            "latest_commit": trimmed_commit,
+            "changed_files": [f.get("filename") for f in changed_files if f.get("filename")][:MAX_CHANGED_FILES],
+            "commit_message": commit_message[:300] if commit_message else "",
             "issue_description": issue_description or ""
         }
         
@@ -68,7 +79,7 @@ class AnalysisOrchestrator:
         start_time = time.time()
         
         # Retry logic for timeout
-        ai_data = None
+        ai_data = {}
         for attempt in range(2):
             try:
                 async with httpx.AsyncClient() as client:
@@ -92,6 +103,9 @@ class AnalysisOrchestrator:
         response_time = time.time() - start_time
         logger.info(f"[{investigation_id}] AI request success. Response time: {response_time:.2f}s")
         
+        if not ai_data:
+            raise DevLensException("AI service returned empty response", status_code=502, error_code="ai_empty_response")
+            
         # 4. Validate AI Response
         try:
             validated_ai_response = AIResponseSchema(**ai_data)
@@ -99,6 +113,9 @@ class AnalysisOrchestrator:
             logger.error(f"[{investigation_id}] Invalid AI Response: {e}")
             raise DevLensException(f"AI service returned invalid payload structure: {e}", status_code=502, error_code="ai_invalid_response")
         
+        # Strip bloated GitHub data before returning to frontend
+        simplified_files = [{"filename": f.get("filename"), "status": f.get("status"), "additions": f.get("additions", 0), "deletions": f.get("deletions", 0)} for f in changed_files if f.get("filename")]
+
         return {
             "investigation_id": investigation_id,
             "status": "completed",
@@ -111,7 +128,7 @@ class AnalysisOrchestrator:
             "branch": branch,
             "latest_commit": commit_sha,
             "commit_message": commit_message,
-            "changed_files": changed_files,
+            "changed_files": simplified_files,
             "parsed_errors": [__import__("json").loads(e) if isinstance(e, str) else e for e in raw_errors],
             "stack_traces": stack_traces,
             "pull_request": pr_data

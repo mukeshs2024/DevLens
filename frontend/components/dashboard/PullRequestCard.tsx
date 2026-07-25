@@ -11,7 +11,7 @@ export function PullRequestCard({ data }: { data?: any }) {
         <div className="overflow-hidden pr-4">
           <p className="text-sm font-medium text-slate-500 mb-1">Latest Pull Request</p>
           <div className="flex items-center gap-2">
-            <span className="text-sm font-bold text-slate-900">{hasPr ? `#${pr.number}` : 'No PR'}</span>
+            <span className="text-sm font-bold text-slate-900">{hasPr ? `#${pr.number}` : 'No recent pull request detected.'}</span>
             <span className="text-sm font-medium text-slate-600 truncate max-w-[120px]" title={pr?.title}>{hasPr ? pr.title : 'No pull request found'}</span>
           </div>
           {hasPr && (

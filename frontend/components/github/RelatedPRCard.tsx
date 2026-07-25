@@ -19,9 +19,9 @@ export function RelatedPRCard({ data }: { data?: any }) {
         <div className="space-y-4">
           <div className="flex items-start justify-between">
             <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-sm font-bold text-slate-900">{hasPr ? `#${pr.number}` : 'No PR'}</span>
-                <span className="text-sm font-medium text-slate-700">{hasPr ? pr.title : 'No pull request found'}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-bold text-slate-900">{hasPr ? `#${pr.number}` : 'No recent pull request detected.'}</span>
+                <span className="text-sm font-medium text-slate-600 truncate max-w-[120px]" title={pr?.title}>{hasPr ? pr.title : 'No pull request found'}</span>
               </div>
               {hasPr && (
                 <div className="flex items-center gap-2">

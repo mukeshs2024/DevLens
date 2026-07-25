@@ -3,4 +3,5 @@ Analyze the deployment incident details and identify the most likely root cause.
 Return concise JSON only with these exact keys:
 summary, root_cause, severity, suggested_fix, confidence.
 Severity must be one of High, Medium, Low, or Critical.
-Be evidence-based, actionable, and concise.
+For the "summary", provide a rich, descriptive 2-3 sentence narrative explaining exactly how the deployment failed (e.g. "The deployment failed because the backend attempted to import X, but Y was not installed. This prevented Z.").
+Be evidence-based and actionable.

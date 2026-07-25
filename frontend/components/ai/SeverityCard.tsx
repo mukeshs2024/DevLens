@@ -13,7 +13,7 @@ export function SeverityCard({ severity }: { severity?: string }) {
             </div>
             <h3 className="font-bold text-blue-900 dark:text-blue-300">Severity</h3>
           </div>
-          <Badge className="bg-blue-600 hover:bg-blue-700 text-white shadow-none">{displaySeverity}</Badge>
+          <Badge className={`${severity === 'Critical' ? 'bg-red-600 hover:bg-red-700' : severity === 'High' ? 'bg-orange-500 hover:bg-orange-600' : severity === 'Medium' ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-blue-600 hover:bg-blue-700'} text-white shadow-none`}>{displaySeverity}</Badge>
         </div>
         <p className="text-sm text-blue-800 dark:text-blue-200/80 mt-auto">
           AI assessed severity level for this investigation.
